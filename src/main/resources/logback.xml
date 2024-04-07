@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!-- path -->
+    <property name="log.path" value="logs"/>
+    <!-- pattern -->
+    <property name="console.log.pattern"
+              value="%red(%d{yyyy-MM-dd HH:mm:ss}) %green([%thread]) %highlight(%-5level) %boldMagenta(%logger{36}%n) - %msg%n"/>
+    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- console -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${console.log.pattern}</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- file_console -->
+    <appender name="file_console" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/console.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- style -->
+            <fileNamePattern>${log.path}/console.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- time -->
+            <maxHistory>1</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!-- level -->
+            <level>INFO</level>
+        </filter>
+    </appender>
+
+    <!-- system log out -->
+    <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/info.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- level -->
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="file_error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- info async -->
+    <appender name="async_info" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- No logs lost.By default, if 80% of the queue is full, the logs at the TRACT, DEBUG, INFO levels -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- Change the default queue depth, which affects performance.The default value is 256 -->
+        <queueSize>512</queueSize>
+        <!-- Add additional appenders, up to a maximum of one -->
+        <appender-ref ref="file_info"/>
+    </appender>
+
+    <!-- error is output asynchronously -->
+    <appender name="async_error" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- No logs lost.By default, if 80% of the queue is full, the logs at the TRACT, DEBUG, INFO levels -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- Change the default queue depth, which affects performance.The default value is 256 -->
+        <queueSize>512</queueSize>
+        <!-- Add additional appenders, up to a maximum of one -->
+        <appender-ref ref="file_error"/>
+    </appender>
+
+    <include resource="logback-logstash.xml" />
+
+    <!--System operation logs-->
+    <root level="info">
+        <appender-ref ref="console"/>
+        <appender-ref ref="async_info"/>
+        <appender-ref ref="async_error"/>
+        <appender-ref ref="file_console"/>
+    </root>
+</configuration>
